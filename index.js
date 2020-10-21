@@ -66,15 +66,16 @@ predict = message => {
   
     onAChannel = true
     voiceChannel = member.voice.channel
-    message.channel.send('Abram alas pro **ANDREI LORD**!')
+    //message.channel.send('Abram alas pro **ANDREI LORD**!')
   
     voiceChannel.join().then(connection => {
       
         var dispatcher = randomize() 
             ? connection.play('./sounds/sim.mp3')
             : connection.play('./sounds/nao.mp3')
-    
-        dispatcher.on("end", end => {
+        
+        console.log('audio ended')
+        dispatcher.on("finish", end => {
             console.log("Audio ended")
             leave()
         });
