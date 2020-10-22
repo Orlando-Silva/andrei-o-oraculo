@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const request = require('request');
 const config = require("./configs/environment.json");
+const fs = require('fs');
 
 const client = new Discord.Client();
 const prefix = config.PREFIX
@@ -10,7 +11,7 @@ const adviceEndpoint = config.ADVICE_URL
 var onAChannel = false;
 var voiceChannel = null;
 
-
+const eggsList = ["banido.mp3", "cavalo.mp3","pog.mp3", "mega-gay-zone.mp3"]
 
 client.on("message", async message => { 
 
@@ -43,7 +44,7 @@ extractCommandFromMessage = message => message.content.slice(prefix.length)
     .shift()
     .toLowerCase()
 
-randomize = () => Math.random() >= 0.5
+randomize = () => Math.random()
 
 leave = () => {
     onAChannel = false
@@ -71,21 +72,67 @@ predict = message => {
   
     onAChannel = true
     voiceChannel = member.voice.channel
-    //message.channel.send('Abram alas pro **ANDREI LORD**!')
   
     voiceChannel.join().then(connection => {
       
-        var dispatcher = randomize() 
-            ? connection.play('./sounds/sim.mp3')
-            : connection.play('./sounds/nao.mp3')
-        
-        dispatcher.on("finish", end => {
-            leave()
-        });
+        if(triggersNormalEasterEgg(message)) {
+
+            var randomNumber = randomize()
+
+            if(randomNumber <= 0.9) {
+                playNormalPredict(connection);    
+            } else {
+                var randomEgg =  eggsList[Math.floor(Math.random() * eggsList.length)]
+
+                var dispatcher =  connection.play(`./sounds/eggs/${randomEgg}`)
+
+                dispatcher.setVolume(0.35)
+
+                dispatcher.on("finish", end => {
+                    leave();
+                });
+            }
+
+        } else {
+
+            if(triggersUltraRareEasterEgg(message)) {
+                var dispatcher =  connection.play('./sounds/eggs/gais.m4a')
+
+                dispatcher.on("finish", end => {
+                    leave();
+                });
+
+            } else if(triggersRareEasterEgg(message)) {
+                var dispatcher = connection.play('./sounds/eggs/voce.m4a')
+
+                dispatcher.on("finish", end => {
+                    leave();
+                });
+            }  else {
+                playNormalPredict(connection);
+            } 
+        }
 
     })
     .catch(console.error)
 }
+
+playNormalPredict = connection => {
+
+    var dispatcher = randomize() >= 0.5
+        ? connection.play('./sounds/sim.mp3')
+        : connection.play('./sounds/nao.mp3');
+
+    dispatcher.on("finish", end => {
+        leave();
+    });
+}
+
+triggersNormalEasterEgg = message => !message.content.endsWith("?")
+
+triggersRareEasterEgg = message => message.content.includes("quem é corno")
+
+triggersUltraRareEasterEgg = message => message.content.includes("cade o gas")
 
 advice = message  => {
 
@@ -101,8 +148,6 @@ advice = message  => {
     });
 }
 
-
 client.login(token)
-
 
 
