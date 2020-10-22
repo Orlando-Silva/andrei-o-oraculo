@@ -1,9 +1,11 @@
 const Discord = require("discord.js");
+const request = require('request');
 const config = require("./configs/environment.json");
 
 const client = new Discord.Client();
 const prefix = config.PREFIX
 const token = config.TOKEN
+const adviceEndpoint = config.ADVICE_URL
 
 var onAChannel = false;
 var voiceChannel = null;
@@ -21,6 +23,9 @@ client.on("message", async message => {
     switch (command) {
         case 'andreilord':
             predict(message)
+            break
+        case 'conselho':
+            advice(message)
             break
         case 'eitaporra':
             leave()
@@ -74,15 +79,28 @@ predict = message => {
             ? connection.play('./sounds/sim.mp3')
             : connection.play('./sounds/nao.mp3')
         
-        console.log('audio ended')
         dispatcher.on("finish", end => {
-            console.log("Audio ended")
             leave()
         });
 
     })
     .catch(console.error)
 }
+
+advice = message  => {
+
+    request(adviceEndpoint, { json: true }, (err, res, body) => {
+        
+        if (err) { 
+            message.channel.send('**Gente, deu ruim, chama o Orlando :C**')
+            return console.log(err)
+        }
+
+        message.channel.send(body.slip.advice);
+        return
+    });
+}
+
 
 client.login(token)
 
