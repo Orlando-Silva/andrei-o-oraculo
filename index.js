@@ -17,11 +17,11 @@ client.on("message", async message => {
     const command = extractCommandFromMessage(message)
 
     switch (command) {
-        case 'andreilord':
+        case 'teste':
             predict.makeAPrediction(message)
             break
         case 'conselho':
-            advice(message)
+            requestAdvice(message)
             break
         default:
           message.reply("Não entendi, porra, manda de novo.")
@@ -36,9 +36,7 @@ extractCommandFromMessage = message => message.content.slice(prefix.length)
     .shift()
     .toLowerCase()
 
-randomize = () => Math.random()
-
-advice = message  => {
+requestAdvice = message  => {
 
     request(adviceEndpoint, { json: true }, (err, res, body) => {
         

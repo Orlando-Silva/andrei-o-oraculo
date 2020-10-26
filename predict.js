@@ -4,6 +4,33 @@ const fs = require('fs');
 var onAChannel = false
 var voiceChannel = null
 
+module.exports = {
+
+    makeAPrediction(message, onAChannel) {
+
+        const cantRequest = !canRequestAPrediction(message.member, message)
+
+        if(cantRequest) {
+            return
+        }
+    
+        onAChannel = true
+        voiceChannel = message.member.voice.channel
+    
+        voiceChannel.join().then(connection => {
+        
+            if(triggersAEasterEgg(message)) {   
+                playAEasterEgg(message, connection)
+            } else {
+                playPrediction(connection)
+            }
+
+        })
+        .catch(console.error)
+    }
+}
+
+
 getAllEasterEggs = () => {
     var easterEggs = []
 
@@ -22,7 +49,7 @@ leaveChannel = () => {
 
 playPrediction = connection => {
 
-    var prediction = randomize() >= 0.5  
+    var prediction = Math.random() >= 0.5  
         ? './sounds/sim.mp3'
         : './sounds/nao.mp3'
 
@@ -52,7 +79,7 @@ playSoundEasterEgg = connection => {
 
 playPredictOrSoundEasterEgg = connection => {
     
-    var shouldPlayPrediction = randomize() <= 0.95
+    var shouldPlayPrediction = Math.random() <= 0.95
 
     if(shouldPlayPrediction) {
         playPrediction(connection) 
@@ -104,38 +131,21 @@ triggersCuckEasterEgg = message => message.content.includes("quem é corno")
 
 triggersGasEasterEgg = message => message.content.includes("cade o gas")
 
-module.exports = {
-
-    makeAPrediction(message, onAChannel) {
-
-        member = message.member
-
-        if (!member) {
-            return
-        }
-
-        if (!member.voice.channel) {
-            message.reply("Me ajuda a te ajudar brother. Tu tem que estar em um canal de voz pra mágica rolar.")
-            return
-        }
-        
-        if (onAChannel) {
-            message.reply("Tô ocupado em outro canal, calmae!")
-            return
-        }
+canRequestAPrediction = (member, message) => {
     
-        onAChannel = true
-        voiceChannel = member.voice.channel
-    
-        voiceChannel.join().then(connection => {
-        
-            if(triggersAEasterEgg(message)) {   
-                playAEasterEgg(message, connection)
-            } else {
-                playPrediction(connection)
-            }
-
-        })
-        .catch(console.error)
+    if (!member) {
+        return false
     }
+
+    if (!member.voice.channel) {
+        message.reply("Me ajuda a te ajudar brother. Tu tem que estar em um canal de voz pra mágica rolar.")
+        return false
+    }
+    
+    if (onAChannel) {
+        message.reply("Tô ocupado em outro canal, calmae!")
+        return false
+    }
+
+    return true
 }
