@@ -41,6 +41,16 @@ getAllEasterEggs = () => {
     return easterEggs
 }
 
+getVariations = () => {
+    var variations = []
+
+    fs.readdirSync(config.VARIATION_DIR).forEach(file => {
+        variations.push(file)
+    });
+
+    return variations
+}
+
 leaveChannel = () => {
     onAChannel = false
     voiceChannel.leave()
@@ -49,11 +59,50 @@ leaveChannel = () => {
 
 playPrediction = connection => {
 
+    if(Math.random() >= 0.95) {
+
+        playVariation(connection)
+    } 
+    else {
+        if(Math.random() >= 0.9) {       
+            playNormalPredictionWithIntroduction(connection)
+        } 
+        else {
+            playNormalPrediction(connection)
+        }   
+    }
+}
+
+playNormalPredictionWithIntroduction = connection => {
+    var introduction = './sounds/introduction.ogg'
+
+    var dispatcher = connection.play(introduction)
+
+    dispatcher.on("finish", end => {
+        playNormalPrediction(connection);
+    });
+}
+
+
+playNormalPrediction = connection => {
     var prediction = Math.random() >= 0.5  
         ? './sounds/sim.mp3'
         : './sounds/nao.mp3'
 
     var dispatcher = connection.play(prediction)
+
+    dispatcher.on("finish", end => {
+        leaveChannel();
+    });
+}
+
+playVariation = connection => {
+    
+    var variations =  getVariations()
+
+    var randomVariation = variations[Math.floor(Math.random() * variations.length)]
+
+    var dispatcher =  connection.play(`${config.VARIATION_DIR}${randomVariation}`)
 
     dispatcher.on("finish", end => {
         leaveChannel();
@@ -66,9 +115,7 @@ playSoundEasterEgg = connection => {
 
     var randomEgg = easterEggs[Math.floor(Math.random() * easterEggs.length)]
 
-    console.log(randomEgg)
-
-    var dispatcher =  connection.play(`./sounds/eggs/${randomEgg}`)
+    var dispatcher =  connection.play(`${config.EASTER_EGG_DIR}${randomEgg}`)
 
     dispatcher.setVolume(0.35)
 
@@ -100,13 +147,17 @@ playAEasterEgg = (message, connection) => {
         
         playGasEasterEgg(connection)
     }
+    else if(triggersPigEasterEgg(message)) {
+
+        playPigEasterEgg(connection)
+    }
     else {   
         playPredictOrSoundEasterEgg(connection)
     }     
 }
 
 playCuckEasterEgg = connection => {
-    var dispatcher = connection.play('./sounds/eggs/voce.m4a')
+    var dispatcher = connection.play('./sounds/eggs/rares/voce.m4a')
 
     dispatcher.on("finish", end => {
         leaveChannel();
@@ -114,7 +165,15 @@ playCuckEasterEgg = connection => {
 }
 
 playGasEasterEgg = connection => {
-    var dispatcher = connection.play('./sounds/eggs/gais.m4a')
+    var dispatcher = connection.play('./sounds/eggs/rares/gais.m4a')
+
+    dispatcher.on("finish", end => {
+        leaveChannel();
+    });
+}
+
+playPigEasterEgg = connection => {
+    var dispatcher = connection.play('./sounds/eggs/rares/porquinho.ogg')
 
     dispatcher.on("finish", end => {
         leaveChannel();
@@ -124,12 +183,19 @@ playGasEasterEgg = connection => {
 triggersAEasterEgg = message => triggersSoundEasterEgg(message)
     || triggersCuckEasterEgg(message)
     || triggersGasEasterEgg(message)
+    || triggersPigEasterEgg(message)
 
 triggersSoundEasterEgg = message => !message.content.endsWith("?")
 
-triggersCuckEasterEgg = message => message.content.includes("quem é corno")
+triggersCuckEasterEgg = message => message.content.toLowerCase().includes("quem é corno")
+    || message.content.toLowerCase().includes("quem e corno")
 
-triggersGasEasterEgg = message => message.content.includes("cade o gas")
+triggersGasEasterEgg = message => message.content.toLowerCase().includes("cade o gas")
+    || message.content.toLowerCase().includes("cade o gás")
+    || message.content.toLowerCase().includes("cadê o gás")
+    || message.content.toLowerCase().includes("cade o gás")
+
+triggersPigEasterEgg = message => message.content.toLowerCase().includes("faz o porquinho")
 
 canRequestAPrediction = (member, message) => {
     

@@ -17,7 +17,7 @@ client.on("message", async message => {
     const command = extractCommandFromMessage(message)
 
     switch (command) {
-        case 'teste':
+        case 'andreilord':
             predict.makeAPrediction(message)
             break
         case 'conselho':
