@@ -59,12 +59,12 @@ leaveChannel = () => {
 
 playPrediction = connection => {
 
-    if(Math.random() >= 0.95) {
+    if(Math.random() >= 0.9) {
 
         playVariation(connection)
     } 
     else {
-        if(Math.random() >= 0.9) {       
+        if(Math.random() >= 0.8) {       
             playNormalPredictionWithIntroduction(connection)
         } 
         else {
